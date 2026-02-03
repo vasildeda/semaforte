@@ -83,7 +83,7 @@ void SwichanderAudioProcessor::changeProgramName(int index, const juce::String& 
 void SwichanderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     midiDebouncer.prepare(sampleRate, samplesPerBlock, 1000);
-    crossFader.prepare(sampleRate, 0.02f);
+    crossFader.prepare(sampleRate, 200);
 }
 
 void SwichanderAudioProcessor::releaseResources()
