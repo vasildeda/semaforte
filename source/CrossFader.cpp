@@ -2,36 +2,36 @@
 
 void CrossFader::prepare(double sampleRate, int fadeTimeMs)
 {
-    currentBus = targetBus = requestedBus = 0;
+    currentBus_ = targetBus_ = requestedBus_ = 0;
 
-    fader.reset(sampleRate, fadeTimeMs / 1000.0);
-    fader.setCurrentAndTargetValue(0.0);
+    fader_.reset(sampleRate, fadeTimeMs / 1000.0);
+    fader_.setCurrentAndTargetValue(0.0);
 }
 
 void CrossFader::requestBus(int newBus)
 {
-    requestedBus = newBus;
+    requestedBus_ = newBus;
 }
 
 float CrossFader::getNextValue()
 {
-    return fader.getNextValue();
+    return fader_.getNextValue();
 }
 
 void CrossFader::updateBusesWhenPossible()
 {
-    if (!fader.isSmoothing()) // i.e. idle
+    if (!fader_.isSmoothing()) // i.e. idle
     {
-        if (targetBus != requestedBus)
+        if (targetBus_ != requestedBus_)
         {
-            currentBus = targetBus;
-            fader.setCurrentAndTargetValue(0.0);
-            targetBus = requestedBus;
+            currentBus_ = targetBus_;
+            fader_.setCurrentAndTargetValue(0.0);
+            targetBus_ = requestedBus_;
         }
 
-        if (currentBus != targetBus)
+        if (currentBus_ != targetBus_)
         {
-            fader.setTargetValue(1.0);
+            fader_.setTargetValue(1.0);
         }
     }
 }

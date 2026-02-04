@@ -82,8 +82,8 @@ void SwichanderAudioProcessor::changeProgramName(int index, const juce::String& 
 //==============================================================================
 void SwichanderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    midiDebouncer.prepare(sampleRate, samplesPerBlock, 1000);
-    crossFader.prepare(sampleRate, 200);
+    midiDebouncer_.prepare(sampleRate, samplesPerBlock, 1000);
+    crossFader_.prepare(sampleRate, 200);
 }
 
 void SwichanderAudioProcessor::releaseResources()
@@ -123,7 +123,7 @@ void SwichanderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 
 void SwichanderAudioProcessor::handleMidi(const juce::MidiBuffer& midi)
 {
-    if (auto msg = midiDebouncer.processBlock(midi))
+    if (auto msg = midiDebouncer_.processBlock(midi))
     {
         printf("Yeah: %s\n", msg->getRawData());
     }
@@ -135,7 +135,7 @@ void SwichanderAudioProcessor::handleMidi(const juce::MidiBuffer& midi)
 
         if (msg.isController() && msg.getControllerNumber() == 20)
         {
-            crossFader.requestBus(msg.getControllerValue());
+            crossFader_.requestBus(msg.getControllerValue());
         }
     }
 }
@@ -144,8 +144,8 @@ void SwichanderAudioProcessor::processBuffer(juce::AudioBuffer<float>& buffer)
 {
     auto out = getBusBuffer(buffer, false, 0);
 
-    auto currentIn = getBusBuffer(buffer, true, crossFader.getCurrentBus());
-    auto targetIn = getBusBuffer(buffer, true, crossFader.getTargetBus());
+    auto currentIn = getBusBuffer(buffer, true, crossFader_.getCurrentBus());
+    auto targetIn = getBusBuffer(buffer, true, crossFader_.getTargetBus());
 
     const int numChannels = juce::jmin(
         currentIn.getNumChannels(),
@@ -156,7 +156,7 @@ void SwichanderAudioProcessor::processBuffer(juce::AudioBuffer<float>& buffer)
 
     for (int s = 0; s < numSamples; ++s)
     {
-        const float g = crossFader.getNextValue();
+        const float g = crossFader_.getNextValue();
 
         for (int ch = 0; ch < numChannels; ++ch)
         {

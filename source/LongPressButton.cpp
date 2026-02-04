@@ -6,11 +6,11 @@ LongPressButton::LongPressButton(const juce::String& name,
                                  double longPressThresholdMs,
                                  LongPressMode mode)
     : juce::DrawableButton(name, juce::DrawableButton::ImageFitted),
-      button(name, juce::DrawableButton::ImageFitted),
-      longPressThreshold(longPressThresholdMs),
-      longPressMode(mode)
+      button_(name, juce::DrawableButton::ImageFitted),
+      longPressThreshold_(longPressThresholdMs),
+      longPressMode_(mode)
 {
-    addAndMakeVisible(button);
+    addAndMakeVisible(button_);
 
     // Create drawables from SVG
     std::unique_ptr<juce::Drawable> normalDrawable = juce::Drawable::createFromImageData(normalSVGData, normalSVGSize);
@@ -20,13 +20,13 @@ LongPressButton::LongPressButton(const juce::String& name,
         pressedDrawable = juce::Drawable::createFromImageData(pressedSVGData, pressedSVGSize);
 
     // Assign to button
-    button.setImages(normalDrawable.get());
+    button_.setImages(normalDrawable.get());
 }
 
 void LongPressButton::mouseDown(const juce::MouseEvent& e)
 {
-    mouseDownTime = juce::Time::getMillisecondCounterHiRes();
-    isMouseDown = true;
+    mouseDownTime_ = juce::Time::getMillisecondCounterHiRes();
+    isMouseDown_ = true;
     startTimer(10);
     juce::DrawableButton::mouseDown(e); // preserve default behavior
 }
@@ -34,9 +34,9 @@ void LongPressButton::mouseDown(const juce::MouseEvent& e)
 void LongPressButton::mouseUp(const juce::MouseEvent& e)
 {
     stopTimer();
-    auto duration = juce::Time::getMillisecondCounterHiRes() - mouseDownTime;
+    auto duration = juce::Time::getMillisecondCounterHiRes() - mouseDownTime_;
 
-    if (duration >= longPressThreshold)
+    if (duration >= longPressThreshold_)
     {
         if (onLongPress) onLongPress();
     }
@@ -45,24 +45,24 @@ void LongPressButton::mouseUp(const juce::MouseEvent& e)
         if (onClick) onClick();
     }
 
-    isMouseDown = false;
+    isMouseDown_ = false;
     juce::DrawableButton::mouseUp(e); // preserve default behavior
 }
 
 void LongPressButton::resized()
 {
-    button.setBounds(getLocalBounds());
+    button_.setBounds(getLocalBounds());
 }
 
 void LongPressButton::timerCallback()
 {
-    if (isMouseDown && longPressMode == LongPressMode::TriggerDuringHold)
+    if (isMouseDown_ && longPressMode_ == LongPressMode::TriggerDuringHold)
     {
-        auto duration = juce::Time::getMillisecondCounterHiRes() - mouseDownTime;
-        if (duration >= longPressThreshold)
+        auto duration = juce::Time::getMillisecondCounterHiRes() - mouseDownTime_;
+        if (duration >= longPressThreshold_)
         {
             stopTimer();
-            isMouseDown = false;
+            isMouseDown_ = false;
             if (onLongPress) onLongPress();
         }
     }

@@ -47,11 +47,11 @@ protected:
     void mouseUp(const juce::MouseEvent& e) override;
 
 private:
-    juce::DrawableButton button;
-    double mouseDownTime { 0.0 };
-    bool isMouseDown { false };
-    double longPressThreshold;
-    LongPressMode longPressMode;
+    juce::DrawableButton button_;
+    double mouseDownTime_ { 0.0 };
+    bool isMouseDown_ { false };
+    double longPressThreshold_;
+    LongPressMode longPressMode_;
 
     void timerCallback() override;
 

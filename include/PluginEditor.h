@@ -39,11 +39,11 @@ public:
     void resized() override;
 
 private:
-    SwichanderAudioProcessor& audioProcessor;
+    SwichanderAudioProcessor& audioProcessor_;
 
-    LogoPlaceholder logo;
-    juce::ToggleButton switchButton { "Switch" };
-    std::array<juce::Label, 5> midiLabels;
+    LogoPlaceholder logo_;
+    juce::ToggleButton switchButton_ { "Switch" };
+    std::array<juce::Label, 5> midiLabels_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SwichanderAudioProcessorEditor)
 };

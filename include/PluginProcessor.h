@@ -58,13 +58,13 @@ public:
 
 private:
     //==============================================================================
-    MidiDebouncer midiDebouncer;
-    CrossFader crossFader;
+    MidiDebouncer midiDebouncer_;
+    CrossFader crossFader_;
 
     //==============================================================================
     void handleMidi(const juce::MidiBuffer& midi);
     void processBuffer(juce::AudioBuffer<float>& buffer);
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SwichanderAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SwichanderAudioProcessor)
 };

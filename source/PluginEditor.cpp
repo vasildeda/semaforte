@@ -11,16 +11,16 @@
 
 //==============================================================================
 SwichanderAudioProcessorEditor::SwichanderAudioProcessorEditor(SwichanderAudioProcessor& p)
-    : AudioProcessorEditor(&p), audioProcessor(p)
+    : AudioProcessorEditor(&p), audioProcessor_(p)
 {
-    addAndMakeVisible(logo);
-    addAndMakeVisible(switchButton);
+    addAndMakeVisible(logo_);
+    addAndMakeVisible(switchButton_);
 
     for (int i = 0; i < 5; ++i)
     {
-        midiLabels[i].setText("MIDI " + juce::String(i + 1), juce::dontSendNotification);
-        midiLabels[i].setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(midiLabels[i]);
+        midiLabels_[i].setText("MIDI " + juce::String(i + 1), juce::dontSendNotification);
+        midiLabels_[i].setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(midiLabels_[i]);
     }
 
     setSize(704, 396);
@@ -47,18 +47,18 @@ void SwichanderAudioProcessorEditor::resized()
                              Track(Fr(1)), Track(Fr(1)), Track(Fr(1)) };
 
     grid.items = {
-        juce::GridItem(logo),
+        juce::GridItem(logo_),
         juce::GridItem(),  // empty
         juce::GridItem(),  // empty
         juce::GridItem(),  // empty
         juce::GridItem(),  // empty
         juce::GridItem(),  // empty
-        juce::GridItem(switchButton),
-        juce::GridItem(midiLabels[0]),
-        juce::GridItem(midiLabels[1]),
-        juce::GridItem(midiLabels[2]),
-        juce::GridItem(midiLabels[3]),
-        juce::GridItem(midiLabels[4])
+        juce::GridItem(switchButton_),
+        juce::GridItem(midiLabels_[0]),
+        juce::GridItem(midiLabels_[1]),
+        juce::GridItem(midiLabels_[2]),
+        juce::GridItem(midiLabels_[3]),
+        juce::GridItem(midiLabels_[4])
     };
 
     grid.performLayout(getLocalBounds());

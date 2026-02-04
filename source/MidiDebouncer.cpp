@@ -3,10 +3,10 @@
 
 void MidiDebouncer::prepare(double sampleRate, int samplesPerBlock, int ignoreTimeMs)
 {
-    this->samplesPerBlock = samplesPerBlock;
-    ignoreSamples = static_cast<juce::int64>(sampleRate * ignoreTimeMs * 0.001);
-    printf("Ignore samples: %llD\n", ignoreSamples);
-    samplesSinceLast = ignoreSamples;
+    samplesPerBlock_ = samplesPerBlock;
+    ignoreSamples_ = static_cast<juce::int64>(sampleRate * ignoreTimeMs * 0.001);
+    printf("Ignore samples: %llD\n", ignoreSamples_);
+    samplesSinceLast_ = ignoreSamples_;
 }
 
 std::optional<juce::MidiMessage> MidiDebouncer::processBlock(const juce::MidiBuffer& midi)
@@ -16,17 +16,17 @@ std::optional<juce::MidiMessage> MidiDebouncer::processBlock(const juce::MidiBuf
         int samplePos = metadata.samplePosition;
 
         // accumulate sample counter across blocks
-        juce::int64 samplesElapsed = samplesSinceLast + samplePos;
+        juce::int64 samplesElapsed = samplesSinceLast_ + samplePos;
 
-        if (samplesElapsed >= ignoreSamples)
+        if (samplesElapsed >= ignoreSamples_)
         {
             printf("Samples elapsed: %lld\n", samplesElapsed);
-            samplesSinceLast = 0; // reset after accepting message
+            samplesSinceLast_ = 0; // reset after accepting message
             return metadata.getMessage();
         }
     }
 
     // nothing allowed this block
-    samplesSinceLast += midi.getNumEvents() > 0 ? midi.getLastEventTime() : samplesPerBlock;
+    samplesSinceLast_ += midi.getNumEvents() > 0 ? midi.getLastEventTime() : samplesPerBlock_;
     return std::nullopt;
 }
