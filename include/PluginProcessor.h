@@ -14,9 +14,8 @@
 #include <juce_core/juce_core.h>
 
 //==============================================================================
-/**
-*/
-class SwichanderAudioProcessor  : public juce::AudioProcessor
+class SwichanderAudioProcessor : public juce::AudioProcessor,
+                                 public juce::AsyncUpdater
 {
 public:
     //==============================================================================
@@ -55,6 +54,13 @@ public:
     //==============================================================================
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
+
+    //==============================================================================
+    // MIDI learn state (bidirectional, thread-safe)
+    std::atomic<bool> midiLearnActive_ { false };
+    std::function<void()> onMidiLearnStateChanged;
+
+    void handleAsyncUpdate() override;
 
 private:
     //==============================================================================

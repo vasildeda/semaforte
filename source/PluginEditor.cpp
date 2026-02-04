@@ -14,7 +14,19 @@ SwichanderAudioProcessorEditor::SwichanderAudioProcessorEditor(SwichanderAudioPr
     : AudioProcessorEditor(&p), audioProcessor_(p)
 {
     addAndMakeVisible(logo_);
-    addAndMakeVisible(switchButton_);
+
+    // Set up MIDI learn button
+    midiLearnButton_.setClickingTogglesState(true);
+    midiLearnButton_.setToggleState(audioProcessor_.midiLearnActive_.load(), juce::dontSendNotification);
+    midiLearnButton_.onClick = [this] {
+        audioProcessor_.midiLearnActive_.store(midiLearnButton_.getToggleState());
+    };
+    addAndMakeVisible(midiLearnButton_);
+
+    // Register callback for processor → GUI updates
+    audioProcessor_.onMidiLearnStateChanged = [this] {
+        midiLearnButton_.setToggleState(audioProcessor_.midiLearnActive_.load(), juce::dontSendNotification);
+    };
 
     for (int i = 0; i < 5; ++i)
     {
@@ -28,6 +40,7 @@ SwichanderAudioProcessorEditor::SwichanderAudioProcessorEditor(SwichanderAudioPr
 
 SwichanderAudioProcessorEditor::~SwichanderAudioProcessorEditor()
 {
+    audioProcessor_.onMidiLearnStateChanged = nullptr;
 }
 
 //==============================================================================
@@ -53,7 +66,7 @@ void SwichanderAudioProcessorEditor::resized()
         juce::GridItem(),  // empty
         juce::GridItem(),  // empty
         juce::GridItem(),  // empty
-        juce::GridItem(switchButton_),
+        juce::GridItem(midiLearnButton_),
         juce::GridItem(midiLabels_[0]),
         juce::GridItem(midiLabels_[1]),
         juce::GridItem(midiLabels_[2]),

@@ -192,6 +192,13 @@ void SwichanderAudioProcessor::setStateInformation(const void* data, int sizeInB
 }
 
 //==============================================================================
+void SwichanderAudioProcessor::handleAsyncUpdate()
+{
+    if (onMidiLearnStateChanged)
+        onMidiLearnStateChanged();
+}
+
+//==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
