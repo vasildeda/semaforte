@@ -28,14 +28,14 @@ public:
 };
 
 //==============================================================================
-class SwichanderAudioProcessorEditor  : public juce::AudioProcessorEditor
+class SwichanderAudioProcessorEditor : public juce::AudioProcessorEditor
 {
 public:
-    SwichanderAudioProcessorEditor (SwichanderAudioProcessor&);
+    SwichanderAudioProcessorEditor(SwichanderAudioProcessor&);
     ~SwichanderAudioProcessorEditor() override;
 
     //==============================================================================
-    void paint (juce::Graphics& g) override;
+    void paint(juce::Graphics& g) override;
     void resized() override;
 
 private:
@@ -45,5 +45,5 @@ private:
     juce::ToggleButton switchButton { "Switch" };
     std::array<juce::Label, 5> midiLabels;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SwichanderAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SwichanderAudioProcessorEditor)
 };

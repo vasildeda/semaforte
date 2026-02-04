@@ -10,8 +10,8 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-SwichanderAudioProcessorEditor::SwichanderAudioProcessorEditor (SwichanderAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+SwichanderAudioProcessorEditor::SwichanderAudioProcessorEditor(SwichanderAudioProcessor& p)
+    : AudioProcessorEditor(&p), audioProcessor(p)
 {
     addAndMakeVisible(logo);
     addAndMakeVisible(switchButton);
@@ -23,7 +23,7 @@ SwichanderAudioProcessorEditor::SwichanderAudioProcessorEditor (SwichanderAudioP
         addAndMakeVisible(midiLabels[i]);
     }
 
-    setSize (704, 396);
+    setSize(704, 396);
 }
 
 SwichanderAudioProcessorEditor::~SwichanderAudioProcessorEditor()
@@ -31,9 +31,9 @@ SwichanderAudioProcessorEditor::~SwichanderAudioProcessorEditor()
 }
 
 //==============================================================================
-void SwichanderAudioProcessorEditor::paint (juce::Graphics& g)
+void SwichanderAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 }
 
 void SwichanderAudioProcessorEditor::resized()
