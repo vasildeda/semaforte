@@ -17,29 +17,58 @@ SwichanderAudioProcessorEditor::SwichanderAudioProcessorEditor(SwichanderAudioPr
 
     for (int i = 0; i < 5; ++i)
     {
-        midiButtons_[i].setButtonText("--");
-        midiButtons_[i].onClick = [this, i] {
-            audioProcessor_.midiLearnTarget_.store(i, std::memory_order_relaxed);
+        channelButtons_[i].setText("--");
+        channelButtons_[i].onClick = [this, i] {
+            audioProcessor_.selectBus(i);
         };
-        addAndMakeVisible(midiButtons_[i]);
+        channelButtons_[i].onLongPress = [this, i] {
+            audioProcessor_.midiLearnTarget_.store(i, std::memory_order_relaxed);
+            updateChannelButtons();
+        };
+        addAndMakeVisible(channelButtons_[i]);
     }
 
     // Register callback for processor → GUI updates
-    audioProcessor_.onMidiLearned = [this] {
-        updateMidiButtons();
+    audioProcessor_.onStateChanged = [this] {
+        updateChannelButtons();
     };
+
+    // Initial state
+    updateChannelButtons();
 
     setSize(704, 396);
 }
 
 SwichanderAudioProcessorEditor::~SwichanderAudioProcessorEditor()
 {
-    audioProcessor_.onMidiLearned = nullptr;
+    audioProcessor_.onStateChanged = nullptr;
 }
 
-void SwichanderAudioProcessorEditor::updateMidiButtons()
+void SwichanderAudioProcessorEditor::updateChannelButtons()
 {
-    // TODO: Display learned MIDI trigger info
+    int selectedBus = audioProcessor_.selectedBus_.load(std::memory_order_relaxed);
+    int learningBus = audioProcessor_.midiLearnTarget_.load(std::memory_order_relaxed);
+
+    for (int i = 0; i < 5; ++i)
+    {
+        channelButtons_[i].setSelected(i == selectedBus);
+        channelButtons_[i].setLearning(i == learningBus);
+
+        // Update text based on trigger assignment
+        int32_t trigger = audioProcessor_.getMidiTrigger(i);
+        if (trigger < 0)
+        {
+            channelButtons_[i].setText("--");
+        }
+        else
+        {
+            // Display as hex for now (status:data1)
+            int status = (trigger >> 8) & 0xFF;
+            int data1 = trigger & 0xFF;
+            channelButtons_[i].setText(juce::String::toHexString(status) + ":" +
+                                       juce::String::toHexString(data1));
+        }
+    }
 }
 
 //==============================================================================
@@ -64,11 +93,11 @@ void SwichanderAudioProcessorEditor::resized()
         juce::GridItem(),  // empty
         juce::GridItem(),  // empty
         juce::GridItem(),  // empty
-        juce::GridItem(midiButtons_[0]),
-        juce::GridItem(midiButtons_[1]),
-        juce::GridItem(midiButtons_[2]),
-        juce::GridItem(midiButtons_[3]),
-        juce::GridItem(midiButtons_[4])
+        juce::GridItem(channelButtons_[0]),
+        juce::GridItem(channelButtons_[1]),
+        juce::GridItem(channelButtons_[2]),
+        juce::GridItem(channelButtons_[3]),
+        juce::GridItem(channelButtons_[4])
     };
 
     grid.performLayout(getLocalBounds());

@@ -60,7 +60,18 @@ public:
     //==============================================================================
     // MIDI learn: -1 = not learning, 0-4 = learning for that bus
     std::atomic<int> midiLearnTarget_ { -1 };
-    std::function<void()> onMidiLearned;
+
+    // Currently selected bus (0-4)
+    std::atomic<int> selectedBus_ { 0 };
+
+    // Callback when state changes (bus selected or MIDI learned)
+    std::function<void()> onStateChanged;
+
+    // Read trigger value for display (returns -1 if unassigned)
+    int32_t getMidiTrigger(int bus) const;
+
+    // Select a bus (from GUI click)
+    void selectBus(int bus);
 
     void handleAsyncUpdate() override;
 

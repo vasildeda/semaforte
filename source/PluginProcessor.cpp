@@ -149,12 +149,16 @@ void SwichanderAudioProcessor::handleMidi(const juce::MidiBuffer& midi)
             midiTriggers_[target].store(packMidiForMatch(*msg), std::memory_order_relaxed);
             midiLearnTarget_.store(-1, std::memory_order_relaxed);
             triggerAsyncUpdate();
-        } else {
+        }
+        else
+        {
             for (int i = 0; i < 5; ++i)
             {
                 if (midiMatches(*msg, midiTriggers_[i].load(std::memory_order_relaxed)))
                 {
                     crossFader_.requestBus(i);
+                    selectedBus_.store(i, std::memory_order_relaxed);
+                    triggerAsyncUpdate();
                     break;
                 }
             }
@@ -214,10 +218,26 @@ void SwichanderAudioProcessor::setStateInformation(const void* data, int sizeInB
 }
 
 //==============================================================================
+int32_t SwichanderAudioProcessor::getMidiTrigger(int bus) const
+{
+    if (bus < 0 || bus >= 5)
+        return kUnassignedTrigger;
+    return midiTriggers_[bus].load(std::memory_order_relaxed);
+}
+
+void SwichanderAudioProcessor::selectBus(int bus)
+{
+    if (bus < 0 || bus >= 5)
+        return;
+    crossFader_.requestBus(bus);
+    selectedBus_.store(bus, std::memory_order_relaxed);
+    triggerAsyncUpdate();
+}
+
 void SwichanderAudioProcessor::handleAsyncUpdate()
 {
-    if (onMidiLearned)
-        onMidiLearned();
+    if (onStateChanged)
+        onStateChanged();
 }
 
 //==============================================================================

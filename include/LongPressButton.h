@@ -1,57 +1,45 @@
 #pragma once
 
-#include <juce_gui_basics/juce_gui_basics.h>  // Component, DrawableButton, Timer
-#include <juce_graphics/juce_graphics.h>      // Drawable
-#include <functional>                          // std::function
+#include <juce_gui_basics/juce_gui_basics.h>
+#include <functional>
 
 /**
  * LongPressButton
- * A reusable SVG-based button that detects short clicks and long presses.
- * Supports lambda callbacks.
+ * A button that detects short clicks and long presses.
+ * Displays text with colored outline based on state.
  */
-class LongPressButton : public juce::DrawableButton,
+class LongPressButton : public juce::Component,
                         private juce::Timer
 {
 public:
-    enum class LongPressMode
-    {
-        TriggerOnRelease,   // long press triggers on mouse release
-        TriggerDuringHold   // long press triggers automatically after threshold
-    };
-
-    /**
-     * @param name                button name
-     * @param normalSVGData       pointer to SVG binary data (BinaryData::xxx_svg)
-     * @param normalSVGSize       size of the SVG binary data
-     * @param pressedSVGData      optional SVG for pressed state
-     * @param pressedSVGSize      size of pressed SVG
-     * @param longPressThresholdMs milliseconds to trigger long press
-     * @param mode                trigger mode for long press
-     */
-    LongPressButton(const juce::String& name,
-                    const void* normalSVGData, int normalSVGSize,
-                    const void* pressedSVGData = nullptr, int pressedSVGSize = 0,
-                    double longPressThresholdMs = 800.0,
-                    LongPressMode mode = LongPressMode::TriggerOnRelease);
-
+    LongPressButton();
     ~LongPressButton() override = default;
 
-    void resized() override;
+    void setText(const juce::String& text);
+    void setSelected(bool selected);
+    void setLearning(bool learning);
+
+    bool isSelected() const { return selected_; }
+    bool isLearning() const { return learning_; }
 
     // Lambda callbacks
-    std::function<void()> onClick;
-    std::function<void()> onLongPress;
+    std::function<void()> onClick;      // short click
+    std::function<void()> onLongPress;  // long press (200ms)
+
+    void paint(juce::Graphics& g) override;
 
 protected:
     void mouseDown(const juce::MouseEvent& e) override;
     void mouseUp(const juce::MouseEvent& e) override;
 
 private:
-    juce::DrawableButton button_;
+    juce::String text_ { "--" };
+    bool selected_ { false };
+    bool learning_ { false };
+
     double mouseDownTime_ { 0.0 };
     bool isMouseDown_ { false };
-    double longPressThreshold_;
-    LongPressMode longPressMode_;
+    static constexpr double kLongPressThreshold_ = 500.0;
 
     void timerCallback() override;
 

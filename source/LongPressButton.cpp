@@ -1,26 +1,49 @@
 #include "LongPressButton.h"
 
-LongPressButton::LongPressButton(const juce::String& name,
-                                 const void* normalSVGData, int normalSVGSize,
-                                 const void* pressedSVGData, int pressedSVGSize,
-                                 double longPressThresholdMs,
-                                 LongPressMode mode)
-    : juce::DrawableButton(name, juce::DrawableButton::ImageFitted),
-      button_(name, juce::DrawableButton::ImageFitted),
-      longPressThreshold_(longPressThresholdMs),
-      longPressMode_(mode)
+LongPressButton::LongPressButton()
 {
-    addAndMakeVisible(button_);
+}
 
-    // Create drawables from SVG
-    std::unique_ptr<juce::Drawable> normalDrawable = juce::Drawable::createFromImageData(normalSVGData, normalSVGSize);
-    std::unique_ptr<juce::Drawable> pressedDrawable = nullptr;
+void LongPressButton::setText(const juce::String& text)
+{
+    text_ = text;
+    repaint();
+}
 
-    if (pressedSVGData && pressedSVGSize > 0)
-        pressedDrawable = juce::Drawable::createFromImageData(pressedSVGData, pressedSVGSize);
+void LongPressButton::setSelected(bool selected)
+{
+    selected_ = selected;
+    repaint();
+}
 
-    // Assign to button
-    button_.setImages(normalDrawable.get());
+void LongPressButton::setLearning(bool learning)
+{
+    learning_ = learning;
+    repaint();
+}
+
+void LongPressButton::paint(juce::Graphics& g)
+{
+    auto bounds = getLocalBounds().toFloat().reduced(2.0f);
+
+    // Background
+    g.setColour(juce::Colours::darkgrey);
+    g.fillRoundedRectangle(bounds, 6.0f);
+
+    // Outline based on state
+    if (learning_)
+        g.setColour(juce::Colours::red);
+    else if (selected_)
+        g.setColour(juce::Colours::green);
+    else
+        g.setColour(juce::Colours::grey);
+
+    g.drawRoundedRectangle(bounds, 6.0f, 2.0f);
+
+    // Text
+    g.setColour(juce::Colours::white);
+    g.setFont(14.0f);
+    g.drawText(text_, getLocalBounds(), juce::Justification::centred);
 }
 
 void LongPressButton::mouseDown(const juce::MouseEvent& e)
@@ -28,42 +51,42 @@ void LongPressButton::mouseDown(const juce::MouseEvent& e)
     mouseDownTime_ = juce::Time::getMillisecondCounterHiRes();
     isMouseDown_ = true;
     startTimer(10);
-    juce::DrawableButton::mouseDown(e); // preserve default behavior
 }
 
 void LongPressButton::mouseUp(const juce::MouseEvent& e)
 {
     stopTimer();
+
+    if (!isMouseDown_)
+        return;  // long press already triggered
+
     auto duration = juce::Time::getMillisecondCounterHiRes() - mouseDownTime_;
 
-    if (duration >= longPressThreshold_)
+    if (duration >= kLongPressThreshold_)
     {
-        if (onLongPress) onLongPress();
+        if (onLongPress)
+            onLongPress();
     }
     else
     {
-        if (onClick) onClick();
+        if (onClick)
+            onClick();
     }
 
     isMouseDown_ = false;
-    juce::DrawableButton::mouseUp(e); // preserve default behavior
-}
-
-void LongPressButton::resized()
-{
-    button_.setBounds(getLocalBounds());
 }
 
 void LongPressButton::timerCallback()
 {
-    if (isMouseDown_ && longPressMode_ == LongPressMode::TriggerDuringHold)
+    if (!isMouseDown_)
+        return;
+
+    auto duration = juce::Time::getMillisecondCounterHiRes() - mouseDownTime_;
+    if (duration >= kLongPressThreshold_)
     {
-        auto duration = juce::Time::getMillisecondCounterHiRes() - mouseDownTime_;
-        if (duration >= longPressThreshold_)
-        {
-            stopTimer();
-            isMouseDown_ = false;
-            if (onLongPress) onLongPress();
-        }
+        stopTimer();
+        isMouseDown_ = false;
+        if (onLongPress)
+            onLongPress();
     }
 }

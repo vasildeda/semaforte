@@ -11,6 +11,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_graphics/juce_graphics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
+#include "LongPressButton.h"
 #include "PluginProcessor.h"
 
 //==============================================================================
@@ -42,9 +43,9 @@ private:
     SwichanderAudioProcessor& audioProcessor_;
 
     LogoPlaceholder logo_;
-    std::array<juce::TextButton, 5> midiButtons_;
+    std::array<LongPressButton, 5> channelButtons_;
 
-    void updateMidiButtons();
+    void updateChannelButtons();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SwichanderAudioProcessorEditor)
 };
