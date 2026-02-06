@@ -16,13 +16,13 @@
 #include <atomic>
 
 //==============================================================================
-class SwichanderAudioProcessor : public juce::AudioProcessor,
+class SwitchanderAudioProcessor : public juce::AudioProcessor,
                                  public juce::AsyncUpdater
 {
 public:
     //==============================================================================
-    SwichanderAudioProcessor();
-    ~SwichanderAudioProcessor() override;
+    SwitchanderAudioProcessor();
+    ~SwitchanderAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
@@ -99,5 +99,5 @@ private:
     void processBuffer(juce::AudioBuffer<float>& buffer);
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SwichanderAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SwitchanderAudioProcessor)
 };

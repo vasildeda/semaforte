@@ -12,11 +12,11 @@ AudioPluginHost.app/Contents/MacOS/AudioPluginHost Switchander.filtergraph
 
 ## Architecture
 
-Swichander is a JUCE audio plugin (AU/VST3/Standalone) that processes MIDI input to control audio crossfading between buses.
+Switchander is a JUCE audio plugin (AU/VST3/Standalone) that processes MIDI input to control audio crossfading between buses.
 
 **Core Components:**
-- `SwichanderAudioProcessor` - Main plugin processor handling MIDI and audio
-- `SwichanderAudioProcessorEditor` - GUI with 2x6 grid layout
+- `SwitchanderAudioProcessor` - Main plugin processor handling MIDI and audio
+- `SwitchanderAudioProcessorEditor` - GUI with 2x6 grid layout
 - `CrossFader` - Smoothed audio crossfader between buses using `juce::SmoothedValue`
 - `MidiDebouncer` - Filters rapid MIDI messages, allowing only one per configurable time window
 - `LongPressButton` - SVG-based button with short click and long press detection modes

@@ -10,7 +10,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-SwichanderAudioProcessorEditor::SwichanderAudioProcessorEditor(SwichanderAudioProcessor& p)
+SwitchanderAudioProcessorEditor::SwitchanderAudioProcessorEditor(SwitchanderAudioProcessor& p)
     : AudioProcessorEditor(&p), audioProcessor_(p)
 {
     addAndMakeVisible(logo_);
@@ -39,12 +39,12 @@ SwichanderAudioProcessorEditor::SwichanderAudioProcessorEditor(SwichanderAudioPr
     setSize(704, 396);
 }
 
-SwichanderAudioProcessorEditor::~SwichanderAudioProcessorEditor()
+SwitchanderAudioProcessorEditor::~SwitchanderAudioProcessorEditor()
 {
     audioProcessor_.onStateChanged = nullptr;
 }
 
-void SwichanderAudioProcessorEditor::updateChannelButtons()
+void SwitchanderAudioProcessorEditor::updateChannelButtons()
 {
     int selectedBus = audioProcessor_.selectedBus_.load(std::memory_order_relaxed);
     int learningBus = audioProcessor_.midiLearnTarget_.load(std::memory_order_relaxed);
@@ -72,12 +72,12 @@ void SwichanderAudioProcessorEditor::updateChannelButtons()
 }
 
 //==============================================================================
-void SwichanderAudioProcessorEditor::paint(juce::Graphics& g)
+void SwitchanderAudioProcessorEditor::paint(juce::Graphics& g)
 {
     g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 }
 
-void SwichanderAudioProcessorEditor::resized()
+void SwitchanderAudioProcessorEditor::resized()
 {
     using Track = juce::Grid::TrackInfo;
     using Fr = juce::Grid::Fr;

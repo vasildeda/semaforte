@@ -37,23 +37,23 @@ private:
 };
 
 //==============================================================================
-class SwichanderAudioProcessorEditor : public juce::AudioProcessorEditor
+class SwitchanderAudioProcessorEditor : public juce::AudioProcessorEditor
 {
 public:
-    SwichanderAudioProcessorEditor(SwichanderAudioProcessor&);
-    ~SwichanderAudioProcessorEditor() override;
+    SwitchanderAudioProcessorEditor(SwitchanderAudioProcessor&);
+    ~SwitchanderAudioProcessorEditor() override;
 
     //==============================================================================
     void paint(juce::Graphics& g) override;
     void resized() override;
 
 private:
-    SwichanderAudioProcessor& audioProcessor_;
+    SwitchanderAudioProcessor& audioProcessor_;
 
     Logo logo_;
     std::array<LongPressButton, 5> channelButtons_;
 
     void updateChannelButtons();
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SwichanderAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SwitchanderAudioProcessorEditor)
 };

@@ -1,4 +1,4 @@
-# Swichander
+# Switchander
 
 A JUCE application project.
 

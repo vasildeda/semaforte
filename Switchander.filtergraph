@@ -59,14 +59,14 @@
       </OUTPUTS>
     </LAYOUT>
   </FILTER>
-  <FILTER uid="32" x="0.32875" y="0.5643153526970954" useARA="0" uiLastX_Normal="94"
-          uiLastY_Normal="221" uiopen_Normal="1">
-    <PLUGIN name="Swichander" format="VST3" category="Fx" manufacturer="Vasilovo"
-            version="1.0.0" file="/Users/vasil/Library/Audio/Plug-Ins/VST3/Swichander.vst3"
-            uniqueId="15f5b35c" isInstrument="0" fileTime="19c30273b9e" infoUpdateTime="19c3029ebde"
+  <FILTER uid="31" x="0.345" y="0.5746887966804979" useARA="0" uiLastX_Normal="79"
+          uiLastY_Normal="206" uiopen_Normal="1">
+    <PLUGIN name="Switchander" format="VST3" category="Fx" manufacturer="Vasilovo"
+            version="1.0.0" file="/Users/vasil/Library/Audio/Plug-Ins/VST3/Switchander.vst3"
+            uniqueId="15f5b35c" isInstrument="0" fileTime="19c304c797c" infoUpdateTime="19c305a2dbc"
             numInputs="10" numOutputs="2" isShell="0" hasARAExtension="0"
             uid="33955f66"/>
-    <STATE>494.VMjLgTd....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9HCN13hUMoFSmoVSt3hKt7zJlcUXxEDZisVRxH1a3vVX3fjTLQmKogjYTwVXogiQY8FMwjENHIUUTkEUKMCR38TNtHzSSM1UZk1YVgEcQYUV3EDZisVRxH1a3vVX3fjTLg1LC8jdIckVsMlUYgWSs8zMP0lXuMVLYsVRs8TdXMkS3A0POUGTsI1aiESVqkTaOcCTsI1aiESVqkTaOkGVS4DdXMzS0AUah81Xwj0ZI01S2.Uah81Xwj0ZI01S4g0TNgmYC8TcP0lXuMVLYsVRs8zMP0lXuMVLYsVRs8TdXMkS3o1POUGTsI1aiESVqkTaOcCTsI1aiESVqkTaOkGVS4TdDMzS0AUah81Xwj0ZI01S2biPig2ZwjUaUwlX4QyPOUGSvL1aMYjVmQiQYsVRs8jKt3hKt3hKt3hKt3hRUACTEEzZh8VVWgkdUYTTmE0UX4BQP4hPqcjXm0jLh4BQP4xPt.0Qt3hKt3hKt3hKtQUUCUEQTg2ZrM1YQcUVDUjQicVP77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9..</STATE>
+    <STATE>496.VMjLgbd....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9HCN33hUMoFSmIWSt3hKt7zJlcUXxEDZisVRxH1a3vVX3fjTLQmKogjYTwVXogiQY8FMwjENHIUUTkEUKMCR38TNtHzSSM1UZoWSFo0YzXTVqkzQHESUrIVdqESXzASZHcGRn8zMP0lXuMVLYsVRxHVN1MzX3sVLY0VUrIVNLkVSzfzPMcyMBMFdqESVsUEahkicCMFdqESVsUEahkCSo0DMHkVS2biPig2ZwjUaUwlX4X2Pig2ZwjUaUwlX4vTZMQCRC4zM2HzX3sVLY0VUrIVN1MzX3sVLY0VUrIVNLkVSzfzTNcyMBMFdqESVsUEahkicCMFdqESVsUEahkCSo0DMLMES2biPig2ZwjUaUwlX4XWdKoWRWoUaiYUV30TaOcyM3QkLqYzXoclUXQWTVkEdzLjKt3hKt3hKt3hKtXlTU0DUQAURWoULEYzXqEEUXoWQF4RPDYFTzDzUXkWSG4RPDYmKtnWPt3hKt3hKt3hKJUELPUTPqI1aYcEV5UkQQcVTWgEOujzPu0Fbu4VYtQmO77hUSQ0LPwVcmklaSQWXzUlO..</STATE>
     <LAYOUT>
       <INPUTS>
         <BUS index="0" layout="L R"/>
@@ -80,11 +80,12 @@
       </OUTPUTS>
     </LAYOUT>
   </FILTER>
-  <CONNECTION srcFilter="26" srcChannel="0" dstFilter="32" dstChannel="8"/>
-  <CONNECTION srcFilter="29" srcChannel="0" dstFilter="32" dstChannel="2"/>
-  <CONNECTION srcFilter="29" srcChannel="1" dstFilter="32" dstChannel="3"/>
+  <CONNECTION srcFilter="26" srcChannel="0" dstFilter="31" dstChannel="8"/>
+  <CONNECTION srcFilter="26" srcChannel="0" dstFilter="31" dstChannel="9"/>
+  <CONNECTION srcFilter="29" srcChannel="0" dstFilter="31" dstChannel="2"/>
+  <CONNECTION srcFilter="29" srcChannel="1" dstFilter="31" dstChannel="3"/>
   <CONNECTION srcFilter="30" srcChannel="4096" dstFilter="29" dstChannel="4096"/>
-  <CONNECTION srcFilter="30" srcChannel="4096" dstFilter="32" dstChannel="4096"/>
-  <CONNECTION srcFilter="32" srcChannel="0" dstFilter="28" dstChannel="0"/>
-  <CONNECTION srcFilter="32" srcChannel="1" dstFilter="28" dstChannel="1"/>
+  <CONNECTION srcFilter="30" srcChannel="4096" dstFilter="31" dstChannel="4096"/>
+  <CONNECTION srcFilter="31" srcChannel="0" dstFilter="28" dstChannel="0"/>
+  <CONNECTION srcFilter="31" srcChannel="1" dstFilter="28" dstChannel="1"/>
 </FILTERGRAPH>
