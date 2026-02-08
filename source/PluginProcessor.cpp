@@ -82,8 +82,8 @@ void SwitchanderAudioProcessor::changeProgramName(int index, const juce::String&
 //==============================================================================
 void SwitchanderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    midiDebouncer_.prepare(sampleRate, samplesPerBlock, 200);
-    crossFader_.prepare(sampleRate, 200);
+    midiDebouncer_.prepare(sampleRate, samplesPerBlock, 10);
+    crossFader_.prepare(sampleRate, 50);
 }
 
 void SwitchanderAudioProcessor::releaseResources()
@@ -170,26 +170,15 @@ void SwitchanderAudioProcessor::handleMidi(const juce::MidiBuffer& midi)
 void SwitchanderAudioProcessor::processBuffer(juce::AudioBuffer<float>& buffer)
 {
     auto out = getBusBuffer(buffer, false, 0);
-
-    auto currentIn = getBusBuffer(buffer, true, crossFader_.getCurrentBus());
-    auto targetIn = getBusBuffer(buffer, true, crossFader_.getTargetBus());
-
-    const int numChannels = juce::jmin(
-        currentIn.getNumChannels(),
-        targetIn.getNumChannels(),
-        out.getNumChannels()
-    );
     const int numSamples = out.getNumSamples();
 
     for (int s = 0; s < numSamples; ++s)
     {
-        const float g = crossFader_.getNextValue();
+        auto [bus, gain] = crossFader_.getNextState();
+        auto in = getBusBuffer(buffer, true, bus);
 
-        for (int ch = 0; ch < numChannels; ++ch)
-        {
-            auto sample = currentIn.getSample(ch, s) * (1.0 - g) + targetIn.getSample(ch, s) * g;
-            out.setSample(ch, s, sample);
-        }
+        for (int ch = 0; ch < juce::jmin(in.getNumChannels(), out.getNumChannels()); ++ch)
+            out.setSample(ch, s, in.getSample(ch, s) * gain);
     }
 }
 

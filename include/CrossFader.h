@@ -5,19 +5,22 @@
 class CrossFader
 {
 public:
-    void prepare(double sampleRate, int fadeTimeMs);
-    void requestBus(int newBus);
-    float getNextValue();
+    struct State
+    {
+        int bus;
+        float gain;
+    };
 
-    int getCurrentBus() { return currentBus_; }
-    int getTargetBus() { return targetBus_; }
+    void prepare(double sampleRate, int fadeTimeMs);
+    void requestBus(int requestedBus);
+    State getNextState();
 
 private:
-    int currentBus_ = 0;
-    int targetBus_ = 0;
+    enum class Phase { Idle, FadingOut, FadingIn };
+
+    int activeBus_ = 0;
     int requestedBus_ = 0;
+    Phase phase_ = Phase::Idle;
 
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> fader_;
-
-    void updateBusesWhenPossible();
 };
