@@ -205,7 +205,7 @@ juce::AudioProcessorEditor* PluginProcessor::createEditor()
 //==============================================================================
 void PluginProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
-    auto xml = std::make_unique<juce::XmlElement>("Mutander");
+    auto xml = std::make_unique<juce::XmlElement>("Semaforte");
     xml->setAttribute("version", 1);
 
     auto* stopXml = xml->createNewChildElement("stopTriggers");
@@ -229,7 +229,7 @@ void PluginProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     auto xml = getXmlFromBinary(data, sizeInBytes);
 
-    if (xml != nullptr && xml->hasTagName("Mutander"))
+    if (xml != nullptr && xml->hasTagName("Semaforte"))
     {
         if (auto* stopXml = xml->getChildByName("stopTriggers"))
         {

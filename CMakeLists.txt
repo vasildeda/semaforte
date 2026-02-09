@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(Mutander VERSION 1.0.0)
+project(Semaforte VERSION 1.0.0)
 
 # Add JUCE
 add_subdirectory(libs/juce)
 
 # Create a JUCE plugin
-juce_add_plugin(Mutander
+juce_add_plugin(Semaforte
     COMPANY_NAME "Vasilovo"
     PLUGIN_MANUFACTURER_CODE VSLV
-    PLUGIN_CODE Mutn
+    PLUGIN_CODE Smfr
     FORMATS AU VST3 Standalone
-    PRODUCT_NAME "Mutander"
-    PLUGIN_NAME "Mutander"
+    PRODUCT_NAME "Semaforte"
+    PLUGIN_NAME "Semaforte"
     VERSION 1.0.0
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT TRUE
@@ -29,7 +29,7 @@ juce_add_binary_data(BinaryResources SOURCES
 )
 
 # Add source files
-target_sources(Mutander PRIVATE
+target_sources(Semaforte PRIVATE
     source/CrossFader.cpp
     source/LongPressButton.cpp
     source/MidiDebouncer.cpp
@@ -38,13 +38,13 @@ target_sources(Mutander PRIVATE
 )
 
 # Add headers
-target_include_directories(Mutander PRIVATE
+target_include_directories(Semaforte PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/source
 )
 
 # Add JUCE modules
-target_link_libraries(Mutander PRIVATE
+target_link_libraries(Semaforte PRIVATE
     juce::juce_audio_basics
     juce::juce_audio_devices
     juce::juce_audio_formats
@@ -60,10 +60,10 @@ target_link_libraries(Mutander PRIVATE
 )
 
 # Set C++ standard
-target_compile_features(Mutander PUBLIC cxx_std_17)
+target_compile_features(Semaforte PUBLIC cxx_std_17)
 
 
 # Disable VST2 to avoid parameter automation conflict with VST3
-target_compile_definitions(Mutander PRIVATE
+target_compile_definitions(Semaforte PRIVATE
     JUCE_VST3_CAN_REPLACE_VST2=0
 )

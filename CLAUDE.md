@@ -7,16 +7,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 cmake -S . -B build
 cmake --build build
-AudioPluginHost.app/Contents/MacOS/AudioPluginHost Mutander.filtergraph
+AudioPluginHost.app/Contents/MacOS/AudioPluginHost Plugin.filtergraph
 ```
 
 ## Architecture
 
-Mutander is a JUCE audio plugin (AU/VST3/Standalone) that processes MIDI input to control audio crossfading between buses.
+Semaforte is a JUCE audio plugin (AU/VST3/Standalone) that processes MIDI input to control audio crossfading between buses.
 
 **Core Components:**
-- `MutanderAudioProcessor` - Main plugin processor handling MIDI and audio
-- `MutanderAudioProcessorEditor` - GUI with 2x6 grid layout
+- `PluginProcessor` - Main plugin processor handling MIDI and audio
+- `PluginEditor` - GUI with 2x6 grid layout
 - `CrossFader` - Smoothed audio crossfader between buses using `juce::SmoothedValue`
 - `MidiDebouncer` - Filters rapid MIDI messages, allowing only one per configurable time window
 - `LongPressButton` - SVG-based button with short click and long press detection modes
