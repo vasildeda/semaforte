@@ -147,13 +147,13 @@ void MutanderAudioProcessor::handleMidi(const juce::MidiBuffer& midi)
                 if (triggers[i].load(std::memory_order_relaxed) == kUnassignedTrigger)
                 {
                     triggers[i].store(packed, std::memory_order_relaxed);
+                    // Exit learn mode if that was the last slot
+                    if (i == kMaxTriggers - 1)
+                        midiLearnTarget_.store(-1, std::memory_order_relaxed);
                     triggerAsyncUpdate();
                     return;
                 }
             }
-            // All slots full, exit learn mode
-            midiLearnTarget_.store(-1, std::memory_order_relaxed);
-            triggerAsyncUpdate();
         }
         else
         {
