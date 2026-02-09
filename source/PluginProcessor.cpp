@@ -120,10 +120,6 @@ bool MutanderAudioProcessor::midiMatches(const juce::MidiMessage& incoming, int3
     if (stored == kUnassignedTrigger)
         return false;
 
-    // Ignore Note On with velocity 0 (treated as Note Off)
-    if (incoming.isNoteOn() && incoming.getVelocity() == 0)
-        return false;
-
     return packMidiForMatch(incoming) == stored;
 }
 

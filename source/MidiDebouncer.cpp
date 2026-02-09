@@ -12,6 +12,12 @@ std::optional<juce::MidiMessage> MidiDebouncer::processBlock(const juce::MidiBuf
 {
     for (const auto metadata : midi)
     {
+        auto msg = metadata.getMessage();
+
+        // Skip Note Off and Note On with velocity 0
+        if (msg.isNoteOff() || (msg.isNoteOn() && msg.getVelocity() == 0))
+            continue;
+
         int samplePos = metadata.samplePosition;
 
         // accumulate sample counter across blocks
@@ -20,7 +26,7 @@ std::optional<juce::MidiMessage> MidiDebouncer::processBlock(const juce::MidiBuf
         if (samplesElapsed >= ignoreSamples_)
         {
             samplesSinceLast_ = 0; // reset after accepting message
-            return metadata.getMessage();
+            return msg;
         }
     }
 
