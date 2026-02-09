@@ -14,11 +14,7 @@ MutanderAudioProcessor::MutanderAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor(
          BusesProperties()
-             .withInput("Input 1", juce::AudioChannelSet::stereo(), true)
-             .withInput("Input 2", juce::AudioChannelSet::stereo(), true)
-             .withInput("Input 3", juce::AudioChannelSet::stereo(), true)
-             .withInput("Input 4", juce::AudioChannelSet::stereo(), true)
-             .withInput("Input 5", juce::AudioChannelSet::stereo(), true)
+             .withInput("Input", juce::AudioChannelSet::stereo(), true)
              .withOutput("Output", juce::AudioChannelSet::stereo(), true)
        )
 #endif
@@ -57,8 +53,7 @@ double MutanderAudioProcessor::getTailLengthSeconds() const
 
 int MutanderAudioProcessor::getNumPrograms()
 {
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    return 1;
 }
 
 int MutanderAudioProcessor::getCurrentProgram()
@@ -88,22 +83,15 @@ void MutanderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
 
 void MutanderAudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool MutanderAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
      && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
-    // This checks if the input layout matches the output layout
    #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
@@ -144,23 +132,40 @@ void MutanderAudioProcessor::handleMidi(const juce::MidiBuffer& midi)
     if (auto msg = midiDebouncer_.processBlock(midi))
     {
         int target = midiLearnTarget_.load(std::memory_order_relaxed);
-        if (target >= 0 && target < 5)
+        if (target == 0 || target == 1)
         {
-            midiTriggers_[target].store(packMidiForMatch(*msg), std::memory_order_relaxed);
+            // Learning mode: fill next empty slot
+            auto& triggers = (target == 0) ? stopTriggers_ : goTriggers_;
+            for (int i = 0; i < kMaxTriggers; ++i)
+            {
+                if (triggers[i].load(std::memory_order_relaxed) == kUnassignedTrigger)
+                {
+                    triggers[i].store(packMidiForMatch(*msg), std::memory_order_relaxed);
+                    triggerAsyncUpdate();
+                    return;
+                }
+            }
+            // All slots full, exit learn mode
             midiLearnTarget_.store(-1, std::memory_order_relaxed);
             triggerAsyncUpdate();
         }
         else
         {
-            for (int i = 0; i < 5; ++i)
+            // Normal mode: check stop triggers first (priority), then go
+            for (int i = 0; i < kMaxTriggers; ++i)
             {
-                auto stored = midiTriggers_[i].load(std::memory_order_relaxed);
-                if (midiMatches(*msg, stored))
+                if (midiMatches(*msg, stopTriggers_[i].load(std::memory_order_relaxed)))
                 {
-                    crossFader_.requestBus(i);
-                    selectedBus_.store(i, std::memory_order_relaxed);
-                    triggerAsyncUpdate();
-                    break;
+                    setMuted(true);
+                    return;
+                }
+            }
+            for (int i = 0; i < kMaxTriggers; ++i)
+            {
+                if (midiMatches(*msg, goTriggers_[i].load(std::memory_order_relaxed)))
+                {
+                    setMuted(false);
+                    return;
                 }
             }
         }
@@ -169,23 +174,21 @@ void MutanderAudioProcessor::handleMidi(const juce::MidiBuffer& midi)
 
 void MutanderAudioProcessor::processBuffer(juce::AudioBuffer<float>& buffer)
 {
-    auto out = getBusBuffer(buffer, false, 0);
-    const int numSamples = out.getNumSamples();
+    const int numChannels = buffer.getNumChannels();
+    const int numSamples = buffer.getNumSamples();
 
     for (int s = 0; s < numSamples; ++s)
     {
-        auto [bus, gain] = crossFader_.getNextState();
-        auto in = getBusBuffer(buffer, true, bus);
-
-        for (int ch = 0; ch < juce::jmin(in.getNumChannels(), out.getNumChannels()); ++ch)
-            out.setSample(ch, s, in.getSample(ch, s) * gain);
+        float gain = crossFader_.getNextGain();
+        for (int ch = 0; ch < numChannels; ++ch)
+            buffer.setSample(ch, s, buffer.getSample(ch, s) * gain);
     }
 }
 
 //==============================================================================
 bool MutanderAudioProcessor::hasEditor() const
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    return true;
 }
 
 juce::AudioProcessorEditor* MutanderAudioProcessor::createEditor()
@@ -199,11 +202,18 @@ void MutanderAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
     auto xml = std::make_unique<juce::XmlElement>("Mutander");
     xml->setAttribute("version", 1);
 
-    auto* triggers = xml->createNewChildElement("triggers");
-    for (int i = 0; i < 5; ++i)
+    auto* stopXml = xml->createNewChildElement("stopTriggers");
+    for (int i = 0; i < kMaxTriggers; ++i)
     {
-        auto* trigger = triggers->createNewChildElement("trigger");
-        trigger->addTextElement(juce::String(midiTriggers_[i].load(std::memory_order_relaxed)));
+        auto* trigger = stopXml->createNewChildElement("trigger");
+        trigger->addTextElement(juce::String(stopTriggers_[i].load(std::memory_order_relaxed)));
+    }
+
+    auto* goXml = xml->createNewChildElement("goTriggers");
+    for (int i = 0; i < kMaxTriggers; ++i)
+    {
+        auto* trigger = goXml->createNewChildElement("trigger");
+        trigger->addTextElement(juce::String(goTriggers_[i].load(std::memory_order_relaxed)));
     }
 
     copyXmlToBinary(*xml, destData);
@@ -215,17 +225,28 @@ void MutanderAudioProcessor::setStateInformation(const void* data, int sizeInByt
 
     if (xml != nullptr && xml->hasTagName("Mutander"))
     {
-        // int version = xml->getIntAttribute("version", 1);
-
-        if (auto* triggers = xml->getChildByName("triggers"))
+        if (auto* stopXml = xml->getChildByName("stopTriggers"))
         {
             int i = 0;
-            for (auto* trigger : triggers->getChildIterator())
+            for (auto* trigger : stopXml->getChildIterator())
             {
-                if (i >= 5)
+                if (i >= kMaxTriggers)
                     break;
-                midiTriggers_[i].store(trigger->getAllSubText().getIntValue(),
+                stopTriggers_[i].store(trigger->getAllSubText().getIntValue(),
                                        std::memory_order_relaxed);
+                ++i;
+            }
+        }
+
+        if (auto* goXml = xml->getChildByName("goTriggers"))
+        {
+            int i = 0;
+            for (auto* trigger : goXml->getChildIterator())
+            {
+                if (i >= kMaxTriggers)
+                    break;
+                goTriggers_[i].store(trigger->getAllSubText().getIntValue(),
+                                     std::memory_order_relaxed);
                 ++i;
             }
         }
@@ -235,26 +256,40 @@ void MutanderAudioProcessor::setStateInformation(const void* data, int sizeInByt
 }
 
 //==============================================================================
-int32_t MutanderAudioProcessor::getMidiTrigger(int bus) const
+int32_t MutanderAudioProcessor::getStopTrigger(int slot) const
 {
-    if (bus < 0 || bus >= 5)
+    if (slot < 0 || slot >= kMaxTriggers)
         return kUnassignedTrigger;
-    return midiTriggers_[bus].load(std::memory_order_relaxed);
+    return stopTriggers_[slot].load(std::memory_order_relaxed);
 }
 
-void MutanderAudioProcessor::clearMidiTrigger(int bus)
+int32_t MutanderAudioProcessor::getGoTrigger(int slot) const
 {
-    if (bus >= 0 && bus < 5)
-        midiTriggers_[bus].store(kUnassignedTrigger, std::memory_order_relaxed);
+    if (slot < 0 || slot >= kMaxTriggers)
+        return kUnassignedTrigger;
+    return goTriggers_[slot].load(std::memory_order_relaxed);
 }
 
-void MutanderAudioProcessor::selectBus(int bus)
+void MutanderAudioProcessor::clearTriggers(int button)
 {
-    if (bus < 0 || bus >= 5)
-        return;
-    crossFader_.requestBus(bus);
-    selectedBus_.store(bus, std::memory_order_relaxed);
+    auto& triggers = (button == 0) ? stopTriggers_ : goTriggers_;
+    for (int i = 0; i < kMaxTriggers; ++i)
+        triggers[i].store(kUnassignedTrigger, std::memory_order_relaxed);
+}
+
+void MutanderAudioProcessor::setMuted(bool muted)
+{
+    isMuted_.store(muted, std::memory_order_relaxed);
+    if (muted)
+        crossFader_.mute();
+    else
+        crossFader_.unmute();
     triggerAsyncUpdate();
+}
+
+bool MutanderAudioProcessor::isMuted() const
+{
+    return isMuted_.load(std::memory_order_relaxed);
 }
 
 void MutanderAudioProcessor::handleAsyncUpdate()
@@ -264,7 +299,6 @@ void MutanderAudioProcessor::handleAsyncUpdate()
 }
 
 //==============================================================================
-// This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new MutanderAudioProcessor();

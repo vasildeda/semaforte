@@ -58,35 +58,44 @@ public:
     void setStateInformation(const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    // MIDI learn: -1 = not learning, 0-4 = learning for that bus
+    // MIDI learn: -1 = off, 0 = learning stop, 1 = learning go
     std::atomic<int> midiLearnTarget_ { -1 };
 
-    // Currently selected bus (0-4)
-    std::atomic<int> selectedBus_ { 0 };
+    // Muted state
+    std::atomic<bool> isMuted_ { false };
 
-    // Callback when state changes (bus selected or MIDI learned)
+    // Callback when state changes
     std::function<void()> onStateChanged;
 
     // Read trigger value for display (returns -1 if unassigned)
-    int32_t getMidiTrigger(int bus) const;
+    int32_t getStopTrigger(int slot) const;
+    int32_t getGoTrigger(int slot) const;
 
-    // Clear a MIDI trigger assignment
-    void clearMidiTrigger(int bus);
+    // Clear all triggers for a button (0=stop, 1=go)
+    void clearTriggers(int button);
 
-    // Select a bus (from GUI click)
-    void selectBus(int bus);
+    // Set muted state from GUI
+    void setMuted(bool muted);
+
+    bool isMuted() const;
 
     void handleAsyncUpdate() override;
+
+    static constexpr int kMaxTriggers = 5;
 
 private:
     //==============================================================================
     MidiDebouncer midiDebouncer_;
     CrossFader crossFader_;
 
-    // MIDI triggers for each bus (0-4). -1 means unassigned.
+    // MIDI triggers. -1 means unassigned.
     // Packed as (status << 8) | data1, ignoring velocity/value.
     static constexpr int32_t kUnassignedTrigger = -1;
-    std::array<std::atomic<int32_t>, 5> midiTriggers_ {
+    std::array<std::atomic<int32_t>, 5> stopTriggers_ {
+        kUnassignedTrigger, kUnassignedTrigger, kUnassignedTrigger,
+        kUnassignedTrigger, kUnassignedTrigger
+    };
+    std::array<std::atomic<int32_t>, 5> goTriggers_ {
         kUnassignedTrigger, kUnassignedTrigger, kUnassignedTrigger,
         kUnassignedTrigger, kUnassignedTrigger
     };

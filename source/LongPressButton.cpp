@@ -22,6 +22,12 @@ void LongPressButton::setLearning(bool learning)
     repaint();
 }
 
+void LongPressButton::setActiveColour(juce::Colour colour)
+{
+    activeColour_ = colour;
+    repaint();
+}
+
 void LongPressButton::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds().toFloat().reduced(2.0f);
@@ -34,7 +40,7 @@ void LongPressButton::paint(juce::Graphics& g)
     if (learning_)
         g.setColour(juce::Colours::red);
     else if (selected_)
-        g.setColour(juce::Colours::green);
+        g.setColour(activeColour_);
     else
         g.setColour(juce::Colours::grey);
 

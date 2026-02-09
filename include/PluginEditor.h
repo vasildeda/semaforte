@@ -9,7 +9,6 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
-#include "BinaryData.h"
 #include "LongPressButton.h"
 #include "PluginProcessor.h"
 
@@ -27,10 +26,12 @@ public:
 private:
     MutanderAudioProcessor& audioProcessor_;
 
-    std::unique_ptr<juce::Drawable> background_;
-    std::array<LongPressButton, 5> channelButtons_;
+    LongPressButton stopButton_;
+    LongPressButton goButton_;
 
-    void updateChannelButtons();
+    void updateButtons();
+    static juce::String formatTrigger(int32_t trigger);
+    static juce::String formatTriggers(std::function<int32_t(int)> getter, int count);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MutanderAudioProcessorEditor)
 };

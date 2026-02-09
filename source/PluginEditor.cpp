@@ -13,40 +13,55 @@
 MutanderAudioProcessorEditor::MutanderAudioProcessorEditor(MutanderAudioProcessor& p)
     : AudioProcessorEditor(&p), audioProcessor_(p)
 {
-    background_ = juce::Drawable::createFromImageData(BinaryData::background_svg,
-                                                      BinaryData::background_svgSize);
+    // Stop button (red)
+    stopButton_.setActiveColour(juce::Colours::red);
+    stopButton_.onClick = [this] {
+        if (audioProcessor_.midiLearnTarget_.load(std::memory_order_relaxed) == 0)
+        {
+            audioProcessor_.midiLearnTarget_.store(-1, std::memory_order_relaxed);
+            updateButtons();
+        }
+        else
+        {
+            audioProcessor_.setMuted(true);
+        }
+    };
+    stopButton_.onLongPress = [this] {
+        audioProcessor_.clearTriggers(0);
+        audioProcessor_.midiLearnTarget_.store(0, std::memory_order_relaxed);
+        updateButtons();
+    };
+    addAndMakeVisible(stopButton_);
 
-    for (int i = 0; i < 5; ++i)
-    {
-        channelButtons_[i].setText("--");
-        channelButtons_[i].onClick = [this, i] {
-            if (audioProcessor_.midiLearnTarget_.load(std::memory_order_relaxed) == i)
-            {
-                audioProcessor_.midiLearnTarget_.store(-1, std::memory_order_relaxed);
-                updateChannelButtons();
-            }
-            else
-            {
-                audioProcessor_.selectBus(i);
-            }
-        };
-        channelButtons_[i].onLongPress = [this, i] {
-            audioProcessor_.clearMidiTrigger(i);
-            audioProcessor_.midiLearnTarget_.store(i, std::memory_order_relaxed);
-            updateChannelButtons();
-        };
-        addAndMakeVisible(channelButtons_[i]);
-    }
+    // Go button (green)
+    goButton_.setActiveColour(juce::Colours::green);
+    goButton_.onClick = [this] {
+        if (audioProcessor_.midiLearnTarget_.load(std::memory_order_relaxed) == 1)
+        {
+            audioProcessor_.midiLearnTarget_.store(-1, std::memory_order_relaxed);
+            updateButtons();
+        }
+        else
+        {
+            audioProcessor_.setMuted(false);
+        }
+    };
+    goButton_.onLongPress = [this] {
+        audioProcessor_.clearTriggers(1);
+        audioProcessor_.midiLearnTarget_.store(1, std::memory_order_relaxed);
+        updateButtons();
+    };
+    addAndMakeVisible(goButton_);
 
-    // Register callback for processor → GUI updates
+    // Register callback for processor -> GUI updates
     audioProcessor_.onStateChanged = [this] {
-        updateChannelButtons();
+        updateButtons();
     };
 
     // Initial state
-    updateChannelButtons();
+    updateButtons();
 
-    setSize(704, 396);
+    setSize(200, 396);
 }
 
 MutanderAudioProcessorEditor::~MutanderAudioProcessorEditor()
@@ -54,76 +69,70 @@ MutanderAudioProcessorEditor::~MutanderAudioProcessorEditor()
     audioProcessor_.onStateChanged = nullptr;
 }
 
-void MutanderAudioProcessorEditor::updateChannelButtons()
+juce::String MutanderAudioProcessorEditor::formatTrigger(int32_t trigger)
 {
-    int selectedBus = audioProcessor_.selectedBus_.load(std::memory_order_relaxed);
-    int learningBus = audioProcessor_.midiLearnTarget_.load(std::memory_order_relaxed);
+    if (trigger < 0)
+        return {};
 
-    for (int i = 0; i < 5; ++i)
+    int status = (trigger >> 8) & 0xFF;
+    int data1 = trigger & 0xFF;
+    int channel = (status & 0x0F) + 1;
+    int type = status & 0xF0;
+
+    juce::String typeName;
+    if (type == 0x90)
+        typeName = juce::MidiMessage::getMidiNoteName(data1, true, true, 3);
+    else if (type == 0xB0)
+        typeName = "CC " + juce::String(data1);
+    else if (type == 0xC0)
+        typeName = "Prog " + juce::String(data1);
+    else
+        typeName = juce::String::toHexString(status) + ":" + juce::String::toHexString(data1);
+
+    return "Ch " + juce::String(channel) + " " + typeName;
+}
+
+juce::String MutanderAudioProcessorEditor::formatTriggers(std::function<int32_t(int)> getter, int count)
+{
+    juce::StringArray lines;
+    for (int i = 0; i < count; ++i)
     {
-        channelButtons_[i].setSelected(i == selectedBus);
-        channelButtons_[i].setLearning(i == learningBus);
-
-        // Update text based on trigger assignment
-        int32_t trigger = audioProcessor_.getMidiTrigger(i);
-        if (trigger < 0)
-        {
-            channelButtons_[i].setText("--");
-        }
-        else
-        {
-            int status = (trigger >> 8) & 0xFF;
-            int data1 = trigger & 0xFF;
-            int channel = (status & 0x0F) + 1;
-            int type = status & 0xF0;
-
-            juce::String typeName;
-            if (type == 0x90)
-                typeName = juce::MidiMessage::getMidiNoteName(data1, true, true, 3);
-            else if (type == 0xB0)
-                typeName = "CC " + juce::String(data1);
-            else if (type == 0xC0)
-                typeName = "Prog " + juce::String(data1);
-            else
-                typeName = juce::String::toHexString(status) + ":" + juce::String::toHexString(data1);
-
-            channelButtons_[i].setText("Ch " + juce::String(channel) + "\n" + typeName);
-        }
+        auto text = formatTrigger(getter(i));
+        if (text.isNotEmpty())
+            lines.add(text);
     }
+    return lines.isEmpty() ? "--" : lines.joinIntoString("\n");
+}
+
+void MutanderAudioProcessorEditor::updateButtons()
+{
+    bool muted = audioProcessor_.isMuted();
+    int learning = audioProcessor_.midiLearnTarget_.load(std::memory_order_relaxed);
+
+    stopButton_.setSelected(muted);
+    stopButton_.setLearning(learning == 0);
+    stopButton_.setText(formatTriggers(
+        [this](int i) { return audioProcessor_.getStopTrigger(i); },
+        MutanderAudioProcessor::kMaxTriggers));
+
+    goButton_.setSelected(!muted);
+    goButton_.setLearning(learning == 1);
+    goButton_.setText(formatTriggers(
+        [this](int i) { return audioProcessor_.getGoTrigger(i); },
+        MutanderAudioProcessor::kMaxTriggers));
 }
 
 //==============================================================================
 void MutanderAudioProcessorEditor::paint(juce::Graphics& g)
 {
     g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
-
-    if (background_)
-        background_->drawWithin(g, getLocalBounds().toFloat(),
-                                juce::RectanglePlacement::centred, 1.0f);
 }
 
 void MutanderAudioProcessorEditor::resized()
 {
-    using Track = juce::Grid::TrackInfo;
-    using Fr = juce::Grid::Fr;
+    auto area = getLocalBounds().reduced(16);
+    auto half = area.getHeight() / 2;
 
-    constexpr float gap = 16.0f;
-
-    juce::Grid grid;
-    grid.templateRows = { Track(Fr(1)), Track(Fr(1)) };
-    grid.templateColumns = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)),
-                             Track(Fr(1)), Track(Fr(1)) };
-    grid.columnGap = juce::Grid::Px(gap);
-    grid.rowGap = juce::Grid::Px(gap);
-
-    grid.items = {
-        juce::GridItem(channelButtons_[0]).withColumn({ 1, 2 }).withRow({ 2, 3 }),
-        juce::GridItem(channelButtons_[1]).withColumn({ 2, 3 }).withRow({ 2, 3 }),
-        juce::GridItem(channelButtons_[2]).withColumn({ 3, 4 }).withRow({ 2, 3 }),
-        juce::GridItem(channelButtons_[3]).withColumn({ 4, 5 }).withRow({ 2, 3 }),
-        juce::GridItem(channelButtons_[4]).withColumn({ 5, 6 }).withRow({ 2, 3 })
-    };
-
-    auto area = getLocalBounds().reduced(static_cast<int>(gap));
-    grid.performLayout(area);
+    stopButton_.setBounds(area.removeFromTop(half).reduced(0, 8));
+    goButton_.setBounds(area.reduced(0, 8));
 }

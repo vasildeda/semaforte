@@ -18,6 +18,7 @@ public:
     void setText(const juce::String& text);
     void setSelected(bool selected);
     void setLearning(bool learning);
+    void setActiveColour(juce::Colour colour);
 
     bool isSelected() const { return selected_; }
     bool isLearning() const { return learning_; }
@@ -36,6 +37,7 @@ private:
     juce::String text_ { "--" };
     bool selected_ { false };
     bool learning_ { false };
+    juce::Colour activeColour_ { juce::Colours::green };
 
     double mouseDownTime_ { 0.0 };
     bool isMouseDown_ { false };
