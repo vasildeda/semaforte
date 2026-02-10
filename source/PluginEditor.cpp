@@ -15,6 +15,21 @@ PluginEditor::PluginEditor(PluginProcessor& p)
     : AudioProcessorEditor(&p), audioProcessor_(p),
       background_(juce::Drawable::createFromImageData(BinaryData::background_svg, BinaryData::background_svgSize))
 {
+    if (background_)
+    {
+        std::function<juce::Component*(juce::Component*, juce::StringRef)> findRecursive =
+            [&](juce::Component* parent, juce::StringRef id) -> juce::Component* {
+            for (auto* c : parent->getChildren())
+            {
+                if (c->getComponentID() == id)
+                    return c;
+                if (auto* found = findRecursive(c, id))
+                    return found;
+            }
+            return nullptr;
+        };
+        titlePath_ = dynamic_cast<juce::DrawableShape*>(findRecursive(background_.get(), "text1"));
+    }
     // Stop button (red)
     stopButton_.setActiveColour(juce::Colours::red);
     stopButton_.onClick = [this] {
@@ -122,6 +137,15 @@ void PluginEditor::updateButtons()
     goButton_.setText(formatTriggers(
         [this](int i) { return audioProcessor_.getGoTrigger(i); },
         PluginProcessor::kMaxTriggers));
+
+    if (titlePath_)
+    {
+        auto colour = learning >= 0 ? juce::Colours::yellow
+                    : muted         ? juce::Colours::red
+                                    : juce::Colours::green;
+        titlePath_->setFill(colour);
+        repaint();
+    }
 }
 
 //==============================================================================

@@ -28,6 +28,7 @@ private:
     PluginProcessor& audioProcessor_;
 
     std::unique_ptr<juce::Drawable> background_;
+    juce::DrawableShape* titlePath_ = nullptr;
     LongPressButton stopButton_;
     LongPressButton goButton_;
 
