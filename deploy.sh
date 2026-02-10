@@ -1,1 +1,1 @@
-open -R build/Mutander_artefacts/VST3/Mutander.vst3
+open -R build/Semaforte_artefacts/VST3/Semaforte.vst3

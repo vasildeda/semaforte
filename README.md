@@ -1,11 +1,13 @@
-# Mutander
+# Semaforte
 
-A JUCE application project.
+A JUCE plugin project. Mutes and unmutes a channel using MIDI-learnt messages.
 
 ## Build
 
+Clean also prepares a build using cmake.
+Run builds and then opens AudioPluginHost.app.
+
 ```bash
-cmake -S . -B build
-cmake --build build
-AudioPluginHost.app/Contents/MacOS/AudioPluginHost Mutander.filtergraph
+./clean.sh
+./run.sh
 ```
