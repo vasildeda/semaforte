@@ -44,7 +44,7 @@ void LongPressButton::paint(juce::Graphics& g)
     else
         g.setColour(juce::Colours::grey);
 
-    g.drawRoundedRectangle(bounds, 16.0f, 8.0f);
+    g.drawRoundedRectangle(bounds, 8.0f, 16.0f);
 
     // Text
     g.setColour(juce::Colours::white);

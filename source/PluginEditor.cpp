@@ -8,10 +8,12 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "BinaryData.h"
 
 //==============================================================================
 PluginEditor::PluginEditor(PluginProcessor& p)
-    : AudioProcessorEditor(&p), audioProcessor_(p)
+    : AudioProcessorEditor(&p), audioProcessor_(p),
+      background_(juce::Drawable::createFromImageData(BinaryData::background_svg, BinaryData::background_svgSize))
 {
     // Stop button (red)
     stopButton_.setActiveColour(juce::Colours::red);
@@ -61,7 +63,7 @@ PluginEditor::PluginEditor(PluginProcessor& p)
     // Initial state
     updateButtons();
 
-    setSize(200, 396);
+    setSize(200, 400);
 }
 
 PluginEditor::~PluginEditor()
@@ -125,14 +127,19 @@ void PluginEditor::updateButtons()
 //==============================================================================
 void PluginEditor::paint(juce::Graphics& g)
 {
-    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
+    if (background_)
+        background_->drawWithin(g, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit, 1.0f);
+    else
+        g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 }
 
 void PluginEditor::resized()
 {
     auto area = getLocalBounds().reduced(16);
-    auto half = area.getHeight() / 2;
+    constexpr int buttonHeight = 160;
+    constexpr int gap = 16;
 
-    stopButton_.setBounds(area.removeFromTop(half).reduced(0, 8));
-    goButton_.setBounds(area.reduced(0, 8));
+    stopButton_.setBounds(area.removeFromTop(buttonHeight));
+    area.removeFromTop(gap);
+    goButton_.setBounds(area.removeFromTop(buttonHeight));
 }

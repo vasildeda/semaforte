@@ -9,6 +9,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_gui_extra/juce_gui_extra.h>
 #include "LongPressButton.h"
 #include "PluginProcessor.h"
 
@@ -26,6 +27,7 @@ public:
 private:
     PluginProcessor& audioProcessor_;
 
+    std::unique_ptr<juce::Drawable> background_;
     LongPressButton stopButton_;
     LongPressButton goButton_;
 
